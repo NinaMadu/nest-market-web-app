@@ -183,6 +183,7 @@ export const CreateListing = () => {
                         <option value="Electronics">Electronics</option>
                         <option value="Furniture">Furniture</option>
                         <option value="Sports Equipment">Sports Equipment</option>
+                        <option value="Other">Other</option>
                     </select>
 
                     <div className='flex flex-col gap-4'>

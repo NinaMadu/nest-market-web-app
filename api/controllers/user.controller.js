@@ -7,10 +7,10 @@ export const test = (req, res) => {
     res.send("Test route");
 };
 
-export const updateUser =  async (req, res, next) => {
-    if(req.user.id !== req.params.id) return next (errorHandler(401, "You can only update your account !"));
+export const updateUser = async (req, res, next) => {
+    if (req.user.id !== req.params.id) return next(errorHandler(401, "You can only update your account !"));
     try {
-        if(req.body.password) {
+        if (req.body.password) {
             req.body.password = bcrypt.hashSync(req.body.password, 10)
         }
 
@@ -24,7 +24,7 @@ export const updateUser =  async (req, res, next) => {
                     avatar: req.body.avatar,
                 },
             },
-            { new: true}
+            { new: true }
         )
 
         const { password, ...rest } = updateUser._doc;
@@ -38,7 +38,7 @@ export const updateUser =  async (req, res, next) => {
 
 
 export const deleteUser = async (req, res, next) => {
-    if(req.user.id !== req.params.id) return next (errorHandler(401, "You can only delete your account"));
+    if (req.user.id !== req.params.id) return next(errorHandler(401, "You can only delete your account"));
 
     try {
         await User.findByIdAndDelete(req.params.id)
@@ -50,7 +50,7 @@ export const deleteUser = async (req, res, next) => {
 }
 
 export const getUserListings = async (req, res, next) => {
-    if(req.user.id === req.params.id) {
+    if (req.user.id === req.params.id) {
         try {
             const listings = await Listing.find({ userRef: req.params.id });
             res.status(200).json(listings);
@@ -63,3 +63,60 @@ export const getUserListings = async (req, res, next) => {
         return next(errorHandler(401, "You cannot veiw that listings!"));
     }
 }
+
+export const getUser = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) return next(errorHandler(404, "User not found"));
+        const { password: pass, ...rest } = user._doc
+        res.status(200).json(rest)
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const toggleWishlist = async (req, res, next) => {
+    const { itemId } = req.body;
+    const userId = req.user.id; // Assuming user is authenticated
+
+    try {
+        const user = await User.findById(userId);
+        const itemIndex = user.wishlist.indexOf(itemId);
+
+        if (itemIndex > -1) {
+            // Item already in wishlist, remove it
+            user.wishlist.splice(itemIndex, 1);
+        } else {
+            // Item not in wishlist, add it
+            user.wishlist.push(itemId);
+        }
+
+        await user.save();
+        res.json({ success: true, wishlist: user.wishlist });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+};
+
+export const getWishlist = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+
+        if (req.user.id !== req.params.id) {
+            return next(errorHandler(401, "You cannot view this wishlist!"));
+        }
+
+        const user = await User.findById(userId).populate("wishlist");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.status(200).json({ success: true, wishlist: user.wishlist });
+    } catch (error) {
+        console.error("Error fetching wishlist:", error);
+        next(error);
+    }
+};

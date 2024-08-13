@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { deleteUserStart, deleteUserSuccess, deleteuserFailure } from '../redux/user/userSlice';
 import { signOutUserStart, signOutUserSuccess, signOutuserFailure } from '../redux/user/userSlice';
 import { Link } from "react-router-dom";
+import { fetchWishlist } from '../services/WishlistService';
 //import Listing from '../../../api/models/listing.model';
 
 
@@ -21,9 +22,13 @@ const Profile = () => {
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
-  const dispatch = useDispatch();
+  
   const [showListingsError, setShowListingsError] = useState(false);
-  const [userListings, setUserListings ] = useState([]);
+  const [userListings, setUserListings] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [showWishlistError, setShowWishlistError] = useState(false); 
+  const dispatch = useDispatch();
+  
 
   console.log(formData)
   //console.log(userListings);
@@ -32,8 +37,9 @@ const Profile = () => {
     if (file) {
       handleFileUpload(file)
     }
-  }, [file])
+  }, [file]);
 
+  
   const handleFileUpload = (file) => {
     const storage = getStorage(app);
 
@@ -138,27 +144,27 @@ const Profile = () => {
       const res = await fetch(`/api/user/listings/${currentUser._id}`)
       const data = await res.json()
 
-      if(data.success === false){
+      if (data.success === false) {
         setShowListingsError(true)
         return
       }
 
-      
+
       setUserListings(data)
-      
+
     } catch (error) {
       setShowListingsError(true)
     }
   }
 
-  const handleListingDelete = async ( listingId ) => {
+  const handleListingDelete = async (listingId) => {
     try {
       const res = await fetch(`/api/listing/delete/${listingId}`, {
         method: "DELETE",
       })
-     
+
       const data = await res.json();
-      if(data.success === false) {
+      if (data.success === false) {
         console.log(error.message);
         return
       }
@@ -168,7 +174,20 @@ const Profile = () => {
     } catch (error) {
       console.log(error.message);
     }
-  }  
+  }
+
+  const fetchWishlistData = async () => {
+    try {
+        const data = await fetchWishlist(currentUser._id);
+        if (data.success === false) {
+            setShowWishlistError(true);
+            return;
+        }
+        setWishlist(data.wishlist);
+    } catch (error) {
+        setShowWishlistError(true);
+    }
+};
 
 
   return (
@@ -218,7 +237,7 @@ const Profile = () => {
         </Link>
 
       </form>
-      
+
 
       <div className='flex justify-between mt-5'>
         <span onClick={handleDeleteuser}
@@ -229,46 +248,78 @@ const Profile = () => {
       <p className='text-red-700 mt-5'>{error ? error : ''}</p>
       <p className='text-green-700 mt-5'>{updateSuccess ? "Profile updated successfully!" : ''}</p>
 
-          <button onClick={handleShowListing} className='text-green-700 w-full'>
-            Show Listing
-          </button>
-          <p className='text-red-700 mt-5'>{showListingsError ?  "Error in Listings" : ""}</p>
+      <button onClick={handleShowListing} className='text-green-700 w-full'>
+        Show Listing
+      </button>
+      <button onClick={fetchWishlistData} className='text-blue-700 w-full mt-5'>
+        Show Wishlist
+      </button>
+      
+      <p className='text-red-700 mt-5'>{showListingsError ? "Error in Listings" : ""}</p>
+      <p className='text-red-700 mt-5'>{showWishlistError ? "Error in Wishlist" : ""}</p>
 
-          {userListings && userListings.length > 0 && (
-            <div className='flex flex-col gap-4'>
-              <h1 className='text-center mt-7 text-2xl font-semibold'>Your Listing</h1>
-              {userListings.map((listing) => (
-                <div key={listing._id}
-                className='border rounded-lg p-3 flex justify-between items-cneter gap-4'
-                >
-                  <Link to = {`/listing/${listing._id}`}>
-                  <img src={listing.imageUrls[0]}
+      {userListings && userListings.length > 0 && (
+        <div className='flex flex-col gap-4'>
+          <h1 className='text-center mt-7 text-2xl font-semibold'>Your Listing</h1>
+          {userListings.map((listing) => (
+            <div key={listing._id}
+              className='border rounded-lg p-3 flex justify-between items-cneter gap-4'
+            >
+              <Link to={`/listing/${listing._id}`}>
+                <img src={listing.imageUrls[0]}
                   alt='listing cover'
-                  className='w-20 h-20 object-contain '/>
-                  </Link>
-                  <Link
-                  className='text-slate-700 font-semibold hover:underline truncate flex'
-                  to={`/listing/${listing._id}`}>
-                    <p>{listing.title}</p>
-                  </Link>
+                  className='w-20 h-20 object-contain ' />
+              </Link>
+              <Link
+                className='text-slate-700 font-semibold hover:underline truncate flex'
+                to={`/listing/${listing._id}`}>
+                <p>{listing.title}</p>
+              </Link>
 
-                  <div className='flex flex-col item-center'>
-                    <button onClick={() => handleListingDelete(listing._id)}
-                    className='text-red-700 uppercase'>
-                      Delete
-                    </button>
+              <div className='flex flex-col item-center'>
+                <button onClick={() => handleListingDelete(listing._id)}
+                  className='text-red-700 uppercase'>
+                  Delete
+                </button>
 
-                    <Link to={`/update-listing/${listing._id}`}>
-                    <button className='text-green-700 uppercase'> 
-                      Edit
-                    </button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                <Link to={`/update-listing/${listing._id}`}>
+                  <button className='text-green-700 uppercase'>
+                    Edit
+                  </button>
+                </Link>
+              </div>
             </div>
-          )}
+          ))}
+        </div>
+      )}
 
+{wishlist && wishlist.length > 0 && (
+        <div className='flex flex-col gap-4'>
+          <h1 className='text-center mt-7 text-2xl font-semibold'>Your Wishlist</h1>
+          {wishlist.map((item) => (
+            <div key={item._id}
+              className='border rounded-lg p-3 flex justify-between items-center gap-4'>
+              <Link to={`/listing/${item._id}`}>
+                <img src={item.imageUrls[0]}
+                  alt='wishlist item cover'
+                  className='w-20 h-20 object-contain' />
+              </Link>
+              <Link
+                className='text-slate-700 font-semibold hover:underline truncate flex'
+                to={`/listing/${item._id}`}>
+                <p>{item.title}</p>
+              </Link>
+
+              <div className='flex flex-col item-center'>
+                <button onClick={() => handleListingDelete(item._id)}
+                  className='text-red-700 uppercase'>
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
