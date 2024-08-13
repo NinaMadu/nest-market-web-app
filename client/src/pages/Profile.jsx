@@ -5,6 +5,7 @@ import { app } from '../firebase';
 import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserStart, deleteUserSuccess, deleteuserFailure, signOutUserStart, signOutUserSuccess, signOutuserFailure } from '../redux/user/userSlice';
 import { Link } from 'react-router-dom';
 import { fetchWishlist } from '../services/WishlistService';
+import Notification from '../components/Notifications';
 
 const Profile = () => {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -278,10 +279,24 @@ const Profile = () => {
             <button className='bg-slate-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
               {loading ? 'Loading...' : 'Update'}
             </button>
-            <p className='text-red-700 mt-5'>{error ? error : ''}</p>
-            <p className='text-green-700 mt-5'>
-              {updateSuccess ? 'Profile updated successfully!' : ''}
-            </p>
+
+            {error && (
+                    <Notification
+                      type="error"
+                      message={error}
+                      onClose={() => setError(null)}
+                    />
+                  )}
+
+                  {/* Success Message */}
+                  {updateSuccess && (
+                    <Notification
+                      type="success"
+                      message="Profile updated successfully!"
+                      onClose={() => setUpdateSuccess(false)}
+                    />
+                  )}
+            
             </div>
           </form>
           </div>
@@ -325,6 +340,13 @@ const Profile = () => {
                 </div>
                 
               )}
+             {showListingsError && (
+                <Notification
+                  type="error"
+                  message="Error fetching listings."
+                  onClose={() => setShowListingsError(false)}
+                />
+              )} 
               </div>
               
               
@@ -359,10 +381,23 @@ const Profile = () => {
                       </div>
                     </div>
                   ))}
+                  {showWishlistError && (
+                <Notification
+                  type="error"
+                  message="Error fetching wishlist."
+                  onClose={() => setShowWishlistError(false)}
+                />
+              )}
                 </div>
               )}
             </div>
-          ) : null}
+          ) : (
+            <Notification
+                  type="error"
+                  message="No items to display!"
+                  onClose={() => setShowWishlistError(false)}
+                />
+          )}
         </div>
 
       </div>
