@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { Navigation } from 'swiper/modules';
-import ListingItem from '../components/ListingItem'; // Import ListingItem component
+import ListingItem from '../components/ListingItem'; 
 import SwiperCore from 'swiper';
 import { FaHome, FaCar, FaMobileAlt, FaCouch, FaFootballBall, FaPlusCircle, FaTimes } from 'react-icons/fa';
 import Logo from '../assets/Logo.png';
@@ -20,7 +20,7 @@ const Home = () => {
   SwiperCore.use([Navigation]);
 
   const { currentUser } = useSelector((state) => state.user);
-  const history = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRealstaleListings = async () => {
