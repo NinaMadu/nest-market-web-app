@@ -24,7 +24,6 @@ app.listen(3000, () => {
 })
 
 app.use('/api/user', userRouter);
-
 app.use('/api/auth', authRouter);
 app.use('/api/listing', listingRouter);
 app.use('/api/message', messageRouter);

@@ -120,3 +120,25 @@ export const getWishlist = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getUserMessageIds = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Find the user by ID and populate only the `messages` field
+        const user = await User.findById(id).select("messages");
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        // Return the list of message IDs
+        res.status(200).json({
+            message: "Message IDs retrieved successfully.",
+            data: user.messages,
+        });
+    } catch (error) {
+        console.error("Error retrieving user messages:", error);
+        res.status(500).json({ error: "Internal Server Error." });
+    }
+};
