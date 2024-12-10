@@ -6,6 +6,7 @@ import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserStart,
 import { Link } from 'react-router-dom';
 import { fetchWishlist } from '../services/WishlistService';
 import Notification from '../components/Notifications';
+import CreateListing from './CreateListing.jsx';
 
 const Profile = () => {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -23,7 +24,8 @@ const Profile = () => {
   const [showProfile, setShowProfile] = useState(true);
   const [showUserItems, setShowUserItems] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
-  
+  const [showCreateAd, setShowCreateAd] = useState(false);
+
   useEffect(() => {
     if (file) {
       handleFileUpload(file);
@@ -132,6 +134,7 @@ const Profile = () => {
       setShowProfile(false);
       setShowUserItems(true);
       setShowWishlist(false);
+      setShowCreateAd(false); 
     } catch (error) {
       setShowListingsError(true);
     }
@@ -164,8 +167,10 @@ const Profile = () => {
       }
       setWishlist(data.wishlist);
       setShowProfile(false);
-        setShowUserItems(false); 
-        setShowWishlist(true); 
+      setShowUserItems(false); 
+      setShowWishlist(true);
+      setShowCreateAd(false); 
+
     } catch (error) {
       setShowWishlistError(true);
     }
@@ -174,6 +179,13 @@ const Profile = () => {
   const handleShowUserItems = async () => {
     await handleShowListing();
     await fetchWishlistData();
+  };
+
+  const handleShowCreateAd = () => {
+    setShowProfile(false);
+    setShowUserItems(false);
+    setShowWishlist(false);
+    setShowCreateAd(true);
   };
 
   return (
@@ -190,7 +202,7 @@ const Profile = () => {
             </button>
             <Link
               className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'
-              to={"/create-listing"}>
+              onClick={handleShowCreateAd}>
               Create a free Ad
             </Link>
             <button
@@ -350,7 +362,11 @@ const Profile = () => {
               </div>
               
               
-        ) : showWishlist ? ( 
+        ) : showCreateAd ? (
+          <div>
+            <CreateListing />
+          </div>
+        ) :showWishlist ? ( 
           <div>
             
             {wishlist && wishlist.length > 0 && (
