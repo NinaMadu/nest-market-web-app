@@ -21,7 +21,15 @@ const userSchema = new mongoose.Schema(
             default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',       
             
         },
-        wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Listing" }],
+        phone: {
+            type: String
+        },
+        wishlist: [
+            { type: mongoose.Schema.Types.ObjectId, ref: "Listing" }
+        ],
+        messages: [
+            { type: mongoose.Schema.Types.ObjectId, ref: "Message" } 
+        ],
 
 
     }, { timestamps: true }
