@@ -41,15 +41,21 @@ export const deleteMessage = async (req, res) => {
     }
 };
 
-export const getMessagesForUser = async (req, res) => {
-    const { userId } = req.params;
+export const getMessagesForReceiver = async (req, res) => {
+    const { userId } = req.params; // Match route parameter name
+
+    if (!userId) {
+        return res.status(400).json({ error: "User ID is required." });
+    }
 
     try {
-        const messages = await Message.find({ receiver: userId })
-            .populate("sender", "username avatar")
-            .populate("itemId", "title");
+        const messages = await Message.find({ receiver: userId }).sort({ createdAt: -1 });
 
-        res.status(200).json({ message: "Messages fetched successfully.", data: messages });
+        if (!messages.length) {
+            return res.status(404).json({ message: "No messages found for this user." });
+        }
+
+        res.status(200).json({ messages });
     } catch (error) {
         console.error("Error fetching messages:", error);
         res.status(500).json({ error: "Internal Server Error." });
