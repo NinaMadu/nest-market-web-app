@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 
 export default function Contact({ listing }) {
   const [seller, setSeller] = useState(null);
   const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
+
+  const dispatch = useDispatch();
+
+  // Get the current user from Redux
+  const { currentUser, loading, error: userError } = useSelector(
+    (state) => state.user
+  );
+
   const onChange = (e) => {
     setMessage(e.target.value);
   };
@@ -13,8 +23,8 @@ export default function Contact({ listing }) {
       try {
         const res = await fetch(`/api/user/${listing.userRef}`);
         const data = await res.json();
-        if( data.success === false ){
-            return;
+        if (data.success === false) {
+          return;
         }
         setSeller(data);
       } catch (error) {
@@ -22,11 +32,43 @@ export default function Contact({ listing }) {
       }
     };
     fetchSeller();
-
   }, [listing.userRef]);
 
+  const handleSendMessage = async () => {
+    if (!currentUser || !currentUser._id) {
+      setError('You must be logged in to send a message.');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
 
+    try {
+      const res = await fetch('http://localhost:3000/api/message/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          sender: currentUser._id, // Using the current user's ID from Redux
+          receiver: listing.userRef,
+          itemId: listing._id,
+        }),
+      });
 
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      setSuccess(true);
+      setMessage('');
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err.message);
+      setTimeout(() => setError(null), 3000);
+    }
+  };
 
   return (
     <div>
@@ -47,12 +89,19 @@ export default function Contact({ listing }) {
             className='w-full border p-3 rounded-lg'
           ></textarea>
 
-          <Link
-          to={`mailto:${seller.email}?subject=Regarding ${listing.title}&body=${message}`}
-          className='bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95'
+          <button
+            onClick={handleSendMessage}
+            className='bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95'
           >
-            Send Message          
-          </Link>
+            Send Message
+          </button>
+
+          {success && (
+            <p className='text-green-500'>Message sent successfully!</p>
+          )}
+          {error && (
+            <p className='text-red-500'>Error: {error}</p>
+          )}
         </div>
       )}
     </div>

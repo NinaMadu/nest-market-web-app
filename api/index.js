@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
@@ -18,6 +19,9 @@ mongoose.connect(process.env.MONGO).then(() => {
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+//development
+app.use(cors());
 
 app.listen(3000, () => {
     console.log("listening to port 3000")

@@ -21,6 +21,11 @@ const messageSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        replyTo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Message", 
+            default: null, 
+          },
     },
     { timestamps: true } // createdAt and updatedAt are added automatically
 );

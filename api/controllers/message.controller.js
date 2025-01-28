@@ -62,6 +62,29 @@ export const getMessagesForReceiver = async (req, res) => {
     }
 };
 
+export const getMessagesForSender = async (req, res) => {
+    const { userId } = req.params; // Match route parameter name
+
+    if (!userId) {
+        return res.status(400).json({ error: "User ID is required." });
+    }
+
+    try {
+        // Find messages where the user is the sender
+        const messages = await Message.find({ sender: userId }).sort({ createdAt: -1 });
+
+        if (!messages.length) {
+            return res.status(404).json({ message: "No messages found for this sender." });
+        }
+
+        res.status(200).json({ messages });
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        res.status(500).json({ error: "Internal Server Error." });
+    }
+};
+
+
 export const getMessageById = async (req, res) => {
     const { id } = req.params;
 
@@ -81,3 +104,35 @@ export const getMessageById = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error." });
     }
 };
+
+export const replyMessage = async (req, res) => {
+    const { id } = req.params; // Original message ID
+    const { message, sender, receiver, itemId } = req.body;
+  
+    try {
+      // Find the original message to reply to
+      const originalMessage = await Message.findById(id);
+      if (!originalMessage) {
+        return res.status(404).json({ error: "Original message not found." });
+      }
+  
+      // Create a new message (reply)
+      const newMessage = new Message({
+        message, // The reply message
+        sender,  // The user sending the reply
+        receiver, // The receiver of the reply (could be the original sender)
+        itemId,   // The item the message is related to
+        replyTo: id, // Reference to the original message
+      });
+  
+      await newMessage.save();
+  
+      res.status(201).json({
+        message: "Reply sent successfully.",
+        data: newMessage,
+      });
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      res.status(500).json({ error: "Internal Server Error." });
+    }
+  };

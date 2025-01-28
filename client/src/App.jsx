@@ -10,6 +10,7 @@ import CreateListing from "./pages/CreateListing";
 import UpdateListing from "./pages/UpdateListing";
 import Listing  from "./pages/Listing";
 import Search from "./pages/Search";
+import Chat from "./components/Chat";
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
             path='/update-listing/:listingId'
             element={<UpdateListing />}
           />
+          <Route path='/chat' element={<Chat />} />
         </Route>
     </Routes>
     </BrowserRouter>

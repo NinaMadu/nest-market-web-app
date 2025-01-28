@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { fetchWishlist } from '../services/WishlistService';
 import Notification from '../components/Notifications';
 import CreateListing from './CreateListing.jsx';
+import Chat from '../components/Chat.jsx';
+import { set } from 'mongoose';
 
 const Profile = () => {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -25,6 +27,7 @@ const Profile = () => {
   const [showUserItems, setShowUserItems] = useState(false);
   const [showWishlist, setShowWishlist] = useState(false);
   const [showCreateAd, setShowCreateAd] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -134,7 +137,8 @@ const Profile = () => {
       setShowProfile(false);
       setShowUserItems(true);
       setShowWishlist(false);
-      setShowCreateAd(false); 
+      setShowCreateAd(false);
+      setShowMessages(false); 
     } catch (error) {
       setShowListingsError(true);
     }
@@ -158,6 +162,14 @@ const Profile = () => {
     }
   };
 
+  const handleMessages = () => {
+    setShowProfile(false);
+    setShowUserItems(false);
+    setShowWishlist(false);
+    setShowCreateAd(false);
+    setShowMessages(true);
+  }
+
   const fetchWishlistData = async () => {
     try {
       const data = await fetchWishlist(currentUser._id);
@@ -170,7 +182,7 @@ const Profile = () => {
       setShowUserItems(false); 
       setShowWishlist(true);
       setShowCreateAd(false); 
-
+      setShowMessages(false);
     } catch (error) {
       setShowWishlistError(true);
     }
@@ -186,13 +198,15 @@ const Profile = () => {
     setShowUserItems(false);
     setShowWishlist(false);
     setShowCreateAd(true);
+    setShowMessages(false);
   };
 
   return (
     <div className='w-full'>
-      <h1 className='text-3xl font-semibold text-left mx-5 my-7'>Hello {currentUser.username ? currentUser.username : 'User'}!</h1>
+      <h1 className='text-3xl font-semibold text-left mx-5 my-7'>
+        Hello {currentUser.username ? currentUser.username : 'User'}!
+      </h1>
       <div className='w-full grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8'>
-        
         <div className='col-span-1 md:col-span-1 lg:col-span-1 p-3'>
           <div className='flex flex-col gap-4'>
             <button
@@ -216,6 +230,11 @@ const Profile = () => {
               My Wishlist
             </button>
             <button
+              onClick={handleMessages}
+              className='bg-green-400 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
+              My Messages
+            </button>
+            <button
               onClick={handleSignOut}
               className='bg-red-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
               Sign out
@@ -229,77 +248,76 @@ const Profile = () => {
             <p className='text-red-700 mt-5'>{showWishlistError ? 'Error in Wishlist' : ''}</p>
           </div>
         </div>
-
+  
         <div className='col-span-1 md:col-span-3 lg:col-span-3 p-3'>
-        {showProfile ? (
-          <div className='flex flex-col gap-4'>
-                  <h1 className='text-center mt-0 text-2xl font-semibold'>Your Profile</h1>
-          <form onSubmit={handleSubmit} className='flex flex-col md:grid md:grid-cols-2 gap-4'>
-            
-            <div className='flex flex-col items-center'>
-            <input
-              onChange={(e) => setFile(e.target.files[0])}
-              type='file'
-              ref={fileRef}
-              hidden
-              accept='image/*'
-            />
-            <img
-              onClick={() => fileRef.current.click()}
-              src={formData.avatar || currentUser.avatar}
-              alt='avatar'
-              className='w-64 h-64 rounded-full object-cover cursor-pointer self-center mt-2'
-            />
-            <p className='text-sm self-center'>
-              {fileUploadError ? (
-                <span className='text-red-700'>
-                  Error Image Upload (image must be less than 2 MB)
-                </span>
-              ) : filePerc > 0 && filePerc < 100 ? (
-                <span className='text-slate-700'>{`Uploading ${filePerc}%`}</span>
-              ) : filePerc === 100 ? (
-                <span className='text-green-700'>Image uploaded successfully</span>
-              ) : (
-                ''
-              )}
-            </p>
-            </div>
+          {showProfile ? (
             <div className='flex flex-col gap-4'>
-            <input
-              type='text'
-              placeholder='username'
-              id='username'
-              defaultValue={currentUser.username}
-              onChange={handleChange}
-              className='border p-3 rounded-lg'
-            />
-            <input
-              type='text'
-              placeholder='email'
-              id='email'
-              defaultValue={currentUser.email}
-              onChange={handleChange}
-              className='border p-3 rounded-lg'
-            />
-            <input
-              type='password'
-              placeholder='password'
-              onChange={handleChange}
-              id='password'
-              className='border p-3 rounded-lg'
-            />
-            <button className='bg-slate-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
-              {loading ? 'Loading...' : 'Update'}
-            </button>
-
-            {error && (
+              <h1 className='text-center mt-0 text-2xl font-semibold'>Your Profile</h1>
+              <form onSubmit={handleSubmit} className='flex flex-col md:grid md:grid-cols-2 gap-4'>
+                <div className='flex flex-col items-center'>
+                  <input
+                    onChange={(e) => setFile(e.target.files[0])}
+                    type='file'
+                    ref={fileRef}
+                    hidden
+                    accept='image/*'
+                  />
+                  <img
+                    onClick={() => fileRef.current.click()}
+                    src={formData.avatar || currentUser.avatar}
+                    alt='avatar'
+                    className='w-64 h-64 rounded-full object-cover cursor-pointer self-center mt-2'
+                  />
+                  <p className='text-sm self-center'>
+                    {fileUploadError ? (
+                      <span className='text-red-700'>
+                        Error Image Upload (image must be less than 2 MB)
+                      </span>
+                    ) : filePerc > 0 && filePerc < 100 ? (
+                      <span className='text-slate-700'>{`Uploading ${filePerc}%`}</span>
+                    ) : filePerc === 100 ? (
+                      <span className='text-green-700'>Image uploaded successfully</span>
+                    ) : (
+                      ''
+                    )}
+                  </p>
+                </div>
+                <div className='flex flex-col gap-4'>
+                  <input
+                    type='text'
+                    placeholder='username'
+                    id='username'
+                    defaultValue={currentUser.username}
+                    onChange={handleChange}
+                    className='border p-3 rounded-lg'
+                  />
+                  <input
+                    type='text'
+                    placeholder='email'
+                    id='email'
+                    defaultValue={currentUser.email}
+                    onChange={handleChange}
+                    className='border p-3 rounded-lg'
+                  />
+                  <input
+                    type='password'
+                    placeholder='password'
+                    onChange={handleChange}
+                    id='password'
+                    className='border p-3 rounded-lg'
+                  />
+                  <button className='bg-slate-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
+                    {loading ? 'Loading...' : 'Update'}
+                  </button>
+  
+                  {error && (
                     <Notification
                       type="error"
                       message={error}
                       onClose={() => setError(null)}
                     />
                   )}
-
+  
                   {/* Success Message */}
                   {updateSuccess && (
                     <Notification
@@ -308,14 +326,12 @@ const Profile = () => {
                       onClose={() => setUpdateSuccess(false)}
                     />
                   )}
-            
+                </div>
+              </form>
             </div>
-          </form>
-          </div>
-        ) : showUserItems ? (
+          ) : showUserItems ? (
             <div>
               {userListings && userListings.length > 0 && (
-                <div>
                 <div className='flex flex-col gap-4'>
                   <h1 className='text-center mt-0 text-2xl font-semibold'>Your Listings</h1>
                   {userListings.map((listing) => (
@@ -349,27 +365,22 @@ const Profile = () => {
                     </div>
                   ))}
                 </div>
-                </div>
-                
               )}
-             {showListingsError && (
+              {showListingsError && (
                 <Notification
                   type="error"
                   message="Error fetching listings."
                   onClose={() => setShowListingsError(false)}
                 />
-              )} 
-              </div>
-              
-              
-        ) : showCreateAd ? (
-          <div>
-            <CreateListing />
-          </div>
-        ) :showWishlist ? ( 
-          <div>
-            
-            {wishlist && wishlist.length > 0 && (
+              )}
+            </div>
+          ) : showCreateAd ? (
+            <div>
+              <CreateListing />
+            </div>
+          ) : showWishlist ? (
+            <div>
+              {wishlist && wishlist.length > 0 ? (
                 <div className='flex flex-col gap-4'>
                   <h1 className='text-center mt-0 text-2xl font-semibold'>Your Wishlist</h1>
                   {wishlist.map((item) => (
@@ -398,27 +409,37 @@ const Profile = () => {
                     </div>
                   ))}
                   {showWishlistError && (
-                <Notification
-                  type="error"
-                  message="Error fetching wishlist."
-                  onClose={() => setShowWishlistError(false)}
-                />
-              )}
+                    <Notification
+                      type="error"
+                      message="Error fetching wishlist."
+                      onClose={() => setShowWishlistError(false)}
+                    />
+                  )}
                 </div>
-              )}
-            </div>
-          ) : (
-            <Notification
+              ) : (
+                <Notification
                   type="error"
                   message="No items to display!"
                   onClose={() => setShowWishlistError(false)}
                 />
+              )}
+            </div>
+          ) : showMessages ? (
+            <div>
+              <Chat />
+            </div>
+          ) : (
+            <Notification
+              type="error"
+              message="No messages to display!"
+              onClose={() => setShowWishlistError(false)}
+            />
           )}
         </div>
-
       </div>
     </div>
   );
+  
 };
 
 export default Profile;
