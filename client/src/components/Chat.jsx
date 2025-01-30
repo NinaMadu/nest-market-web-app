@@ -3,12 +3,39 @@ import { useSelector } from "react-redux";
 
 export default function Chat() {
   const { currentUser } = useSelector((state) => state.user);
+  const [messages, setMessages] = useState([]);
   const [inbox, setInbox] = useState([]);
   const [sentbox, setSentbox] = useState([]);
   const [activeTab, setActiveTab] = useState("inbox");
   const [error, setError] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null); // State to store selected message
   const [replyText, setReplyText] = useState(""); // State to store reply text
+
+  const fetchMessages = async () => {
+    try {
+      const inboxRes = await fetch(`http://localhost:3000/api/message/receiver/${currentUser._id}`);
+      const sentRes = await fetch(`http://localhost:3000/api/message/sender/${currentUser._id}`);
+      
+      const inboxData = await inboxRes.json();
+      const sentData = await sentRes.json();
+      
+      if (inboxRes.ok && sentRes.ok) {
+        // Combine and sort messages by newest first
+        const allMessages = [...inboxData.messages, ...sentData.messages].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setMessages(allMessages);
+      } else {
+        setError("Failed to fetch messages.");
+      }
+    } catch (err) {
+      setError("Error fetching messages.");
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, [currentUser]);
 
   // Fetch Inbox Messages
   const fetchInboxMessages = async () => {
@@ -91,106 +118,86 @@ export default function Chat() {
   }, [currentUser]);
 
   return (
-    <div className="chat-component">
-      <div className="tabs flex gap-4 mb-4">
-        <button
-          onClick={() => setActiveTab("inbox")}
-          className={`p-2 ${activeTab === "inbox" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-        >
-          Inbox
-        </button>
-        <button
-          onClick={() => setActiveTab("sentbox")}
-          className={`p-2 ${activeTab === "sentbox" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-        >
-          Sentbox
-        </button>
-      </div>
-
-      <div className="messages-list">
-        {error && <p className="text-red-500">{error}</p>}
-
-        {activeTab === "inbox" && (
-          <div>
-            {inbox.length > 0 ? (
-              inbox.map((message) => (
-                <div key={message._id} className="message-item border p-3 rounded-lg mb-2">
-                  <p><strong>From:</strong> {message.sender.username}</p>
-                  <p>{message.message}</p>
-                  <p><small>{new Date(message.createdAt).toLocaleString()}</small></p>
-                  <button
-                    onClick={() => { fetchMessageDetails(message._id); }}
-                    className="bg-blue-500 text-white px-3 py-1 rounded-lg mt-2"
-                  >
-                    View & Reply
-                  </button>
-                  <button
-                    onClick={() => deleteMessage(message._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg mt-2"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p>No messages in your inbox.</p>
-            )}
+   
+<div className="container mx-auto shadow-lg rounded-lg">
+      {/* Chat List Section */}
+      <div className="flex flex-row justify-between bg-white">
+        {/* Messages List */}
+        <div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
+          <div className="border-b-2 py-4 px-2">
+            <input
+              type="text"
+              placeholder="Search messages"
+              className="py-2 px-2 border-2 border-gray-200 rounded-2xl w-full"
+            />
           </div>
-        )}
-
-        {activeTab === "sentbox" && (
-          <div>
-            {sentbox.length > 0 ? (
-              sentbox.map((message) => (
-                <div key={message._id} className="message-item border p-3 rounded-lg mb-2">
-                  <p><strong>To:</strong> {message.receiver.username}</p>
-                  <p>{message.message}</p>
-                  <p><small>{new Date(message.createdAt).toLocaleString()}</small></p>
-                  <button
-                    onClick={() => { fetchMessageDetails(message._id); }}
-                    className="bg-blue-500 text-white px-3 py-1 rounded-lg mt-2"
-                  >
-                    View & Reply
-                  </button>
-                  <button
-                    onClick={() => deleteMessage(message._id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded-lg mt-2"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p>No messages in your sentbox.</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Show message details and reply */}
-      {selectedMessage && (
-        <div className="message-details border p-4 rounded-lg mt-4">
-          <h3>Message Details</h3>
-          <p><strong>From:</strong> {selectedMessage.sender.username}</p>
-          <p><strong>To:</strong> {selectedMessage.receiver.username}</p>
-          <p>{selectedMessage.message}</p>
-          <p><small>{new Date(selectedMessage.createdAt).toLocaleString()}</small></p>
-
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Write your reply..."
-            className="border p-2 w-full mt-2"
-          ></textarea>
-
-          <button
-            onClick={handleReplySubmit}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg mt-2"
-          >
-            Send Reply
-          </button>
-        </div>
-      )}
+          {/* Message List */}
+          {messages.map((msg) => (
+  <div 
+    key={msg._id} 
+    className="flex flex-row py-4 px-2 justify-start items-center border-b-2 cursor-pointer"
+    onClick={() => fetchMessageDetails(msg._id)}
+  >
+    <div className="w-1/4">
+      <img
+        src="https://source.unsplash.com/random/600x600"
+        className="object-cover h-12 w-12 rounded-full"
+        alt="User Avatar"
+      />
     </div>
-  );
+    <div className="w-full">
+      <div className="text-lg font-semibold">{msg.senderName || "Unknown"}</div>
+      <span className="text-gray-500">
+        {msg.text ? (msg.text.length > 30 ? msg.text.substring(0, 30) + "..." : msg.text) : "No message content"}
+      </span>
+    </div>
+  </div>
+))}
+        </div>
+        {/* End Messages List */}
+
+        {/* Chat Messages Section */}
+        <div className="w-full px-5 flex flex-col justify-between">
+          <div className="flex flex-col mt-5">
+            {/* Chat Messages */}
+            <div className="flex justify-end mb-4">
+              <div className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
+                Welcome to the chat!
+              </div>
+              <img
+                src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+                className="object-cover h-8 w-8 rounded-full"
+                alt="User Avatar"
+              />
+            </div>
+          </div>
+          {/* Message Input Field */}
+          <div className="py-5">
+            <input
+              className="w-full bg-gray-300 py-5 px-3 rounded-xl"
+              type="text"
+              placeholder="Type your message here..."
+            />
+          </div>
+        </div>
+        {/* End Chat Messages Section */}
+
+        {/* Group Info Section */}
+        <div className="w-2/5 border-l-2 px-5">
+          <div className="flex flex-col">
+            <div className="font-semibold text-xl py-4">MERN Stack Group</div>
+            <img
+              src="https://source.unsplash.com/L2cxSuKWbpo/600x600"
+              className="object-cover rounded-xl h-64"
+              alt="Group Avatar"
+            />
+            <div className="font-semibold py-4">Created 22 Sep 2021</div>
+            <div className="font-light">Welcome to the group chat!</div>
+          </div>
+        </div>
+        {/* End Group Info Section */}
+      </div>
+    </div>
+    
+);
 }
