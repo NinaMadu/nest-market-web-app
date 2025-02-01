@@ -1,5 +1,5 @@
 import express from "express";
-import { test, updateUser, deleteUser, getUserListings, getUser, toggleWishlist, getWishlist, getUserMessageIds } from "../controllers/user.controller.js";
+import { test, updateUser, deleteUser, getUserListings, getUser, toggleWishlist, getWishlist, getUserMessageIds, getUsernameById } from "../controllers/user.controller.js";
 import { verifyToken } from "../utils/verifyUser.js"; 
  
 const router = express.Router();
@@ -13,6 +13,7 @@ router.get("/:id", verifyToken, getUser);
 router.post("/wishlist/toggle", verifyToken, toggleWishlist);
 router.get("/wishlist/:id", verifyToken, getWishlist);
 router.get("/messages/:id", getUserMessageIds);
+router.get("/username/:id", getUsernameById);
 
 export default router;
 

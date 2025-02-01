@@ -118,3 +118,17 @@ export const getListing = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getTitleById = async (req, res, next) => {
+    try {
+        const item = await Listing.findById(req.params.id).select("title");
+
+        if (!item) {
+            return next(errorHandler(404, "Item not found"));
+        }
+
+        res.status(200).json({ item: item.title });
+    } catch (error) {
+        next(error);
+    }
+};

@@ -142,3 +142,17 @@ export const getUserMessageIds = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error." });
     }
 };
+
+export const getUsernameById = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.params.id).select("username");
+
+        if (!user) {
+            return next(errorHandler(404, "User not found"));
+        }
+
+        res.status(200).json({ username: user.username });
+    } catch (error) {
+        next(error);
+    }
+};

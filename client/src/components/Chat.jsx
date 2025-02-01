@@ -13,25 +13,80 @@ export default function Chat() {
 
   const fetchMessages = async () => {
     try {
-      const inboxRes = await fetch(`http://localhost:3000/api/message/receiver/${currentUser._id}`);
-      const sentRes = await fetch(`http://localhost:3000/api/message/sender/${currentUser._id}`);
-      
-      const inboxData = await inboxRes.json();
-      const sentData = await sentRes.json();
-      
-      if (inboxRes.ok && sentRes.ok) {
-        // Combine and sort messages by newest first
-        const allMessages = [...inboxData.messages, ...sentData.messages].sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setMessages(allMessages);
-      } else {
-        setError("Failed to fetch messages.");
-      }
+        const inboxRes = await fetch(`http://localhost:3000/api/message/receiver/${currentUser._id}`);
+        const sentRes = await fetch(`http://localhost:3000/api/message/sender/${currentUser._id}`);
+
+        const inboxData = await inboxRes.json();
+        const sentData = await sentRes.json();
+
+        if (inboxRes.ok && sentRes.ok) {
+            let allMessages = [...inboxData.messages, ...sentData.messages];
+
+            const userIds = [...new Set(allMessages.flatMap(msg => [msg.sender, msg.receiver]))];
+            const itemIds = [...new Set(allMessages.map(msg => msg.itemId))];
+
+            console.log("User IDs:", userIds);
+            console.log("Item IDs:", itemIds);
+
+            const userMap = {};
+            await Promise.all(userIds.map(async (id) => {
+                if (!id) return;
+                const res = await fetch(`http://localhost:3000/api/user/username/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log(`Fetched username for ${id}:`, data.username);
+                    userMap[id] = data.username;
+                } else {
+                    console.error(`Error fetching username for ${id}`);
+                    userMap[id] = "Unknown";
+                }
+            }));
+
+            const itemMap = {};
+            await Promise.all(itemIds.map(async (id) => {
+                if (!id) return;
+                const res = await fetch(`http://localhost:3000/api/listing/title/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log(`Fetched item title for ${id}:`, data.title);
+                    itemMap[id] = data.title;
+                } else {
+                    console.error(`Error fetching item title for ${id}`);
+                    itemMap[id] = "Unknown Item";
+                }
+            }));
+
+            allMessages = allMessages.map((msg) => {
+                let userId = msg.sender === currentUser._id ? msg.receiver : msg.sender;
+                let type = msg.sender === currentUser._id ? "Sent" : "Received"; // New field
+
+                console.log("User ID:", userId, "Type:", type);
+                
+                return {
+                    user: userMap[userId] || "Unknown",
+                    text: msg.message,
+                    item: itemMap[msg.itemId] || "Unknown Item",
+                    timestamp: new Date(msg.createdAt).toLocaleString(),
+                    type, // Added Sent/Received field
+                };
+            }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            console.log("Mapped Messages:", allMessages);
+            setMessages(allMessages);
+        } else {
+            console.error("Failed to fetch messages.");
+            setError("Failed to fetch messages.");
+        }
     } catch (err) {
-      setError("Error fetching messages.");
+        console.error("Error fetching messages:", err);
+        setError("Error fetching messages.");
     }
-  };
+};
+
+
+  
+  
+  
 
   useEffect(() => {
     fetchMessages();
@@ -64,6 +119,7 @@ export default function Chat() {
   // Fetch Message Details
   const fetchMessageDetails = async (id) => {
     try {
+      console.log("Fetching message details for ID:", id);
       const res = await fetch(`http://localhost:3000/api/message/${id}`);
       const data = await res.json();
       if (res.ok) {
@@ -132,9 +188,9 @@ export default function Chat() {
             />
           </div>
           {/* Message List */}
-          {messages.map((msg) => (
+          {messages.map((msg, index) => (
   <div 
-    key={msg._id} 
+    key={index} 
     className="flex flex-row py-4 px-2 justify-start items-center border-b-2 cursor-pointer"
     onClick={() => fetchMessageDetails(msg._id)}
   >
@@ -146,10 +202,13 @@ export default function Chat() {
       />
     </div>
     <div className="w-full">
-      <div className="text-lg font-semibold">{msg.senderName || "Unknown"}</div>
-      <span className="text-gray-500">
-        {msg.text ? (msg.text.length > 30 ? msg.text.substring(0, 30) + "..." : msg.text) : "No message content"}
+      <div className="text-lg font-semibold">{msg.user || "Unknown"}</div>
+      <span className={`text-sm ${msg.type === "Sent" ? "text-blue-500" : "text-green-500"}`}>
+        {msg.type}
       </span>
+      <div className="text-gray-500">
+        {msg.text ? (msg.text.length > 30 ? msg.text.substring(0, 30) + "..." : msg.text) : "No message content"}
+      </div>
     </div>
   </div>
 ))}
