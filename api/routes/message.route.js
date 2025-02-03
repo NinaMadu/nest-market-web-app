@@ -6,6 +6,8 @@ import {
     getMessagesForSender,
     getMessageById,
     replyMessage,
+    markMessageAsRead,
+    getMessagesByConversation
 } from "../controllers/message.controller.js";
 
 const router = express.Router();
@@ -16,5 +18,7 @@ router.get("/receiver/:userId", getMessagesForReceiver);
 router.get("/sender/:userId", getMessagesForSender);
 router.get("/:id", getMessageById);
 router.post("/:id/reply", replyMessage);
+router.put("/:id/read", markMessageAsRead);
+router.get("/conversation/:conversationId", getMessagesByConversation);
 
 export default router;

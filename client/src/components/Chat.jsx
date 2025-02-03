@@ -3,260 +3,105 @@ import { useSelector } from "react-redux";
 
 export default function Chat() {
   const { currentUser } = useSelector((state) => state.user);
-  const [messages, setMessages] = useState([]);
-  const [inbox, setInbox] = useState([]);
-  const [sentbox, setSentbox] = useState([]);
-  const [activeTab, setActiveTab] = useState("inbox");
+  const [conversations, setConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
   const [error, setError] = useState(null);
-  const [selectedMessage, setSelectedMessage] = useState(null); // State to store selected message
-  const [replyText, setReplyText] = useState(""); // State to store reply text
+  const [replyText, setReplyText] = useState("");
 
-  const fetchMessages = async () => {
+  const fetchConversations = async () => {
     try {
-        const inboxRes = await fetch(`http://localhost:3000/api/message/receiver/${currentUser._id}`);
-        const sentRes = await fetch(`http://localhost:3000/api/message/sender/${currentUser._id}`);
-
-        const inboxData = await inboxRes.json();
-        const sentData = await sentRes.json();
-
-        if (inboxRes.ok && sentRes.ok) {
-            let allMessages = [...inboxData.messages, ...sentData.messages];
-
-            const userIds = [...new Set(allMessages.flatMap(msg => [msg.sender, msg.receiver]))];
-            const itemIds = [...new Set(allMessages.map(msg => msg.itemId))];
-
-            console.log("User IDs:", userIds);
-            console.log("Item IDs:", itemIds);
-
-            const userMap = {};
-            await Promise.all(userIds.map(async (id) => {
-                if (!id) return;
-                const res = await fetch(`http://localhost:3000/api/user/username/${id}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    console.log(`Fetched username for ${id}:`, data.username);
-                    userMap[id] = data.username;
-                } else {
-                    console.error(`Error fetching username for ${id}`);
-                    userMap[id] = "Unknown";
-                }
-            }));
-
-            const itemMap = {};
-            await Promise.all(itemIds.map(async (id) => {
-                if (!id) return;
-                const res = await fetch(`http://localhost:3000/api/listing/title/${id}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    console.log(`Fetched item title for ${id}:`, data.title);
-                    itemMap[id] = data.title;
-                } else {
-                    console.error(`Error fetching item title for ${id}`);
-                    itemMap[id] = "Unknown Item";
-                }
-            }));
-
-            allMessages = allMessages.map((msg) => {
-                let userId = msg.sender === currentUser._id ? msg.receiver : msg.sender;
-                let type = msg.sender === currentUser._id ? "Sent" : "Received"; // New field
-
-                console.log("User ID:", userId, "Type:", type);
-                
-                return {
-                    user: userMap[userId] || "Unknown",
-                    text: msg.message,
-                    item: itemMap[msg.itemId] || "Unknown Item",
-                    timestamp: new Date(msg.createdAt).toLocaleString(),
-                    type, // Added Sent/Received field
-                };
-            }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-            console.log("Mapped Messages:", allMessages);
-            setMessages(allMessages);
-        } else {
-            console.error("Failed to fetch messages.");
-            setError("Failed to fetch messages.");
-        }
-    } catch (err) {
-        console.error("Error fetching messages:", err);
-        setError("Error fetching messages.");
-    }
-};
-
-
-  
-  
-  
-
-  useEffect(() => {
-    fetchMessages();
-  }, [currentUser]);
-
-  // Fetch Inbox Messages
-  const fetchInboxMessages = async () => {
-    try {
-      const res = await fetch(`http://localhost:3000/api/message/receiver/${currentUser._id}`);
+      const res = await fetch(`http://localhost:3000/api/conversations/${currentUser._id}`);
       const data = await res.json();
-      if (res.ok) setInbox(data.messages);
-      else setError(data.error || "Failed to fetch inbox messages.");
-    } catch (err) {
-      setError("Error fetching inbox messages.");
-    }
-  };
 
-  // Fetch Sent Messages
-  const fetchSentMessages = async () => {
-    try {
-      const res = await fetch(`http://localhost:3000/api/message/sender/${currentUser._id}`);
-      const data = await res.json();
-      if (res.ok) setSentbox(data.messages);
-      else setError(data.error || "Failed to fetch sentbox messages.");
-    } catch (err) {
-      setError("Error fetching sentbox messages.");
-    }
-  };
-
-  // Fetch Message Details
-  const fetchMessageDetails = async (id) => {
-    try {
-      console.log("Fetching message details for ID:", id);
-      const res = await fetch(`http://localhost:3000/api/message/${id}`);
-      const data = await res.json();
       if (res.ok) {
-        setSelectedMessage(data.data); // Set the selected message
+        setConversations(data.conversations);
       } else {
-        setError(data.error || "Failed to fetch message details.");
+        setError("Failed to fetch conversations.");
       }
     } catch (err) {
-      setError("Error fetching message details.");
+      setError("Error fetching conversations.");
     }
   };
 
-  // Handle sending reply
+  const fetchConversationMessages = async (conversationId) => {
+    try {
+      const res = await fetch(`http://localhost:3000/api/conversations/messages/${conversationId}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        setSelectedConversation(data);
+      } else {
+        setError("Failed to fetch messages.");
+      }
+    } catch (err) {
+      setError("Error fetching messages.");
+    }
+  };
+
   const handleReplySubmit = async () => {
-    if (!replyText) return; // Don't allow sending empty messages
+    if (!replyText || !selectedConversation) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/api/message/${selectedMessage._id}/reply`, {
+      const res = await fetch(`http://localhost:3000/api/message/reply`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: replyText, // Use replyText here
-          sender: currentUser._id, // The sender's ID (currentUser)
-          receiver: selectedMessage.sender, // Use sender's ID for the receiver
-          itemId: selectedMessage.itemId, // Ensure itemId is correctly referenced
+          message: replyText,
+          sender: currentUser._id,
+          receiver: selectedConversation.participantId,
+          conversationId: selectedConversation._id,
         }),
       });
 
-      const data = await res.json(); // Get response data
-
+      const data = await res.json();
       if (res.ok) {
-        setReplyText(""); // Clear the reply form after successful submission
-        setSelectedMessage(null); // Close the reply form
-        fetchInboxMessages(); // Refresh inbox messages
-        fetchSentMessages(); // Refresh sentbox messages
+        setReplyText("");
+        fetchConversationMessages(selectedConversation._id);
       } else {
-        console.error("Error response from backend:", data);
         setError(data.error || "Failed to send the reply.");
       }
     } catch (err) {
-      console.error("Catch block error:", err);
       setError("Error sending reply.");
     }
   };
 
-  // Initial fetch for messages
   useEffect(() => {
-    fetchInboxMessages();
-    fetchSentMessages();
+    fetchConversations();
   }, [currentUser]);
 
   return (
-   
-<div className="container mx-auto shadow-lg rounded-lg">
-      {/* Chat List Section */}
-      <div className="flex flex-row justify-between bg-white">
-        {/* Messages List */}
-        <div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
+    <div className="container mx-auto shadow-lg rounded-lg">
+      <div className="flex flex-row bg-white">
+        <div className="w-2/5 border-r-2 overflow-y-auto">
           <div className="border-b-2 py-4 px-2">
-            <input
-              type="text"
-              placeholder="Search messages"
-              className="py-2 px-2 border-2 border-gray-200 rounded-2xl w-full"
-            />
+            <input type="text" placeholder="Search conversations" className="py-2 px-2 border-2 border-gray-200 rounded-2xl w-full" />
           </div>
-          {/* Message List */}
-          {messages.map((msg, index) => (
-  <div 
-    key={index} 
-    className="flex flex-row py-4 px-2 justify-start items-center border-b-2 cursor-pointer"
-    onClick={() => fetchMessageDetails(msg._id)}
-  >
-    <div className="w-1/4">
-      <img
-        src="https://source.unsplash.com/random/600x600"
-        className="object-cover h-12 w-12 rounded-full"
-        alt="User Avatar"
-      />
-    </div>
-    <div className="w-full">
-      <div className="text-lg font-semibold">{msg.user || "Unknown"}</div>
-      <span className={`text-sm ${msg.type === "Sent" ? "text-blue-500" : "text-green-500"}`}>
-        {msg.type}
-      </span>
-      <div className="text-gray-500">
-        {msg.text ? (msg.text.length > 30 ? msg.text.substring(0, 30) + "..." : msg.text) : "No message content"}
-      </div>
-    </div>
-  </div>
-))}
+          {conversations.map((conv) => (
+            <div key={conv._id} className="flex py-4 px-2 cursor-pointer border-b-2" onClick={() => fetchConversationMessages(conv._id)}>
+              <div className="w-1/4">
+                <img src="https://source.unsplash.com/random/600x600" className="h-12 w-12 rounded-full" alt="Avatar" />
+              </div>
+              <div className="w-full">
+                <div className="text-lg font-semibold">{conv.participantName || "Unknown"}</div>
+                <div className="text-gray-500">{conv.lastMessage}</div>
+              </div>
+            </div>
+          ))}
         </div>
-        {/* End Messages List */}
-
-        {/* Chat Messages Section */}
         <div className="w-full px-5 flex flex-col justify-between">
           <div className="flex flex-col mt-5">
-            {/* Chat Messages */}
-            <div className="flex justify-end mb-4">
-              <div className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
-                Welcome to the chat!
+            {selectedConversation && selectedConversation.messages.map((msg, index) => (
+              <div key={index} className={`flex ${msg.sender === currentUser._id ? "justify-end" : "justify-start"} mb-4`}>
+                <div className={`py-3 px-4 ${msg.sender === currentUser._id ? "bg-blue-400 text-white" : "bg-gray-300"} rounded-lg`}>{msg.message}</div>
               </div>
-              <img
-                src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-                className="object-cover h-8 w-8 rounded-full"
-                alt="User Avatar"
-              />
-            </div>
+            ))}
           </div>
-          {/* Message Input Field */}
           <div className="py-5">
-            <input
-              className="w-full bg-gray-300 py-5 px-3 rounded-xl"
-              type="text"
-              placeholder="Type your message here..."
-            />
+            <input className="w-full bg-gray-300 py-5 px-3 rounded-xl" type="text" placeholder="Type your message here..." value={replyText} onChange={(e) => setReplyText(e.target.value)} />
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-2" onClick={handleReplySubmit}>Send</button>
           </div>
         </div>
-        {/* End Chat Messages Section */}
-
-        {/* Group Info Section */}
-        <div className="w-2/5 border-l-2 px-5">
-          <div className="flex flex-col">
-            <div className="font-semibold text-xl py-4">MERN Stack Group</div>
-            <img
-              src="https://source.unsplash.com/L2cxSuKWbpo/600x600"
-              className="object-cover rounded-xl h-64"
-              alt="Group Avatar"
-            />
-            <div className="font-semibold py-4">Created 22 Sep 2021</div>
-            <div className="font-light">Welcome to the group chat!</div>
-          </div>
-        </div>
-        {/* End Group Info Section */}
       </div>
     </div>
-    
-);
+  );
 }

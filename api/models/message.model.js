@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
     {
+        conversationId: {
+            type: String,
+            required: true, 
+        },
         message: {
             type: String,
             required: true,
@@ -26,6 +30,10 @@ const messageSchema = new mongoose.Schema(
             ref: "Message", 
             default: null, 
           },
+          read: {
+            type: Boolean,
+            default: false, 
+        },
     },
     { timestamps: true } // createdAt and updatedAt are added automatically
 );
