@@ -188,3 +188,46 @@ export const markMessageAsRead = async (req, res) => {
     }
 };
 
+export const getConversationsByUserId = async (req, res) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        return res.status(400).json({ error: "User ID is required." });
+    }
+
+    try {
+        // Find messages where the user is part of the conversationId
+        const messages = await Message.find({
+            conversationId: { $regex: new RegExp(`^${userId}_|_${userId}_|_${userId}$`) }
+        })
+        .sort({ createdAt: -1 })
+        .populate("sender", "username avatar")
+        .populate("receiver", "username avatar")
+        .populate("itemId", "title");
+
+        if (!messages.length) {
+            return res.status(404).json({ message: "No conversations found for this user." });
+        }
+
+        // Group messages by conversationId and keep only the latest message for each
+        const conversations = {};
+        messages.forEach((msg) => {
+            const { conversationId } = msg;
+            if (!conversations[conversationId]) {
+                conversations[conversationId] = {
+                    conversationId,
+                    item: msg.itemId,
+                    participants: [msg.sender, msg.receiver],
+                    lastMessage: msg,
+                };
+            }
+        });
+
+        res.status(200).json({ conversations: Object.values(conversations) });
+    } catch (error) {
+        console.error("Error fetching conversations:", error);
+        res.status(500).json({ error: "Internal Server Error." });
+    }
+};
+
+
