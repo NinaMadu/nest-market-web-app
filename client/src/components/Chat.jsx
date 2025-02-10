@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { FaBox, FaLink } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 export default function Chat() {
   const { currentUser } = useSelector((state) => state.user);
@@ -38,10 +40,15 @@ export default function Chat() {
         const firstMessage = data.messages[0];
         const participantId = firstMessage.sender === currentUser._id ? firstMessage.receiver : firstMessage.sender;
   
+        const resTitle = await fetch(`http://localhost:3000/api/listing/title/${firstMessage.itemId}`);
+      const dataTitle = await resTitle.json();
+
+        console.log("title:", dataTitle.item);
         setSelectedConversation({
           id: conversationId,
           participant: participantId, // Only user ID, consider fetching details
           itemId: firstMessage.itemId,
+          title: dataTitle.item,
         });
   
         setMessages(data.messages);
@@ -124,6 +131,25 @@ export default function Chat() {
 
         {/* Chat Messages */}
         <div className="w-full px-5 flex flex-col justify-between">
+          <div>
+          <div className="flex flex-col mt-5">
+    <div className="mb-4 flex items-center space-x-2">
+      {/* Item icon at the front */}
+      <FaBox className="text-gray-500" />
+
+      {/* Title as a clickable link, bold with icons */}
+      <Link
+        to={`/listing/${selectedConversation?.itemId}`} // Navigate to the listing page
+        className="font-bold text-blue-500 hover:underline flex items-center"
+      >
+        {selectedConversation?.title || "Chat"}
+
+        {/* Link icon at the back */}
+        <FaLink className="ml-2 text-blue-500" />
+      </Link>
+    </div>
+    </div>
+      </div>
           <div className="flex flex-col mt-5">
             {messages.map((msg, index) => (
               <div key={index} className={`flex ${msg.sender === currentUser._id ? "justify-end" : "justify-start"} mb-4`}>
