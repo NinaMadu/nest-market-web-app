@@ -30,12 +30,23 @@ export default function Chat() {
     try {
       const res = await fetch(`http://localhost:3000/api/message/conversation/${conversationId}`);
       const data = await res.json();
-
-      if (res.ok) {
-        setSelectedConversation({ id: conversationId, participant: data.participant });
+  
+      if (res.ok && data.messages.length > 0) {
+        console.log("data:", data);
+        
+        // Extract sender and receiver from the first message
+        const firstMessage = data.messages[0];
+        const participantId = firstMessage.sender === currentUser._id ? firstMessage.receiver : firstMessage.sender;
+  
+        setSelectedConversation({
+          id: conversationId,
+          participant: participantId, // Only user ID, consider fetching details
+          itemId: firstMessage.itemId,
+        });
+  
         setMessages(data.messages);
       } else {
-        setError("Failed to fetch messages.");
+        setError("No messages found.");
       }
     } catch (err) {
       setError("Error fetching messages.");
@@ -44,6 +55,11 @@ export default function Chat() {
 
   // Handle sending a reply
   const handleReplySubmit = async () => {
+    console.log("replyText:", replyText);
+    //console.log("selectedConversation:", selectedConversation);
+    console.log("sender:", currentUser._id);
+    console.log("receiver:", selectedConversation?.participant);
+    console.log("itemId:", selectedConversation?.itemId);
     if (!replyText || !selectedConversation || !selectedConversation.participant) {
       console.error("Invalid conversation or missing participant.");
       return;
@@ -56,9 +72,8 @@ export default function Chat() {
         body: JSON.stringify({
           message: replyText,
           sender: currentUser._id,
-          receiver: selectedConversation.participant._id, 
-          conversationId: selectedConversation.id,
-          itemId: selectedConversation.itemId || null, 
+          receiver: selectedConversation.participant,          
+          itemId: selectedConversation.itemId, 
         }),
       });
   
