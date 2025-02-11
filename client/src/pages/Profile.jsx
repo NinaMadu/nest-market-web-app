@@ -9,6 +9,8 @@ import Notification from '../components/Notifications';
 import CreateListing from './CreateListing.jsx';
 import Chat from '../components/Chat.jsx';
 import { set } from 'mongoose';
+import 'boxicons/css/boxicons.min.css';
+import ConfirmationMessage from '../components/ConfirmationMessage.jsx';
 
 const Profile = () => {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -28,6 +30,9 @@ const Profile = () => {
   const [showWishlist, setShowWishlist] = useState(false);
   const [showCreateAd, setShowCreateAd] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({});
 
   useEffect(() => {
     if (file) {
@@ -203,47 +208,115 @@ const Profile = () => {
 
   return (
     <div className='w-full'>
-      <h1 className='text-3xl font-semibold text-left mx-5 my-7'>
-        Hello {currentUser.username ? currentUser.username : 'User'}!
-      </h1>
+        
+
       <div className='w-full grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8'>
         <div className='col-span-1 md:col-span-1 lg:col-span-1 p-3'>
           <div className='flex flex-col gap-4'>
-            <button
-              onClick={() => setShowProfile(true)}
-              className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
-              Update Profile
-            </button>
-            <Link
-              className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'
-              onClick={handleShowCreateAd}>
-              Create a free Ad
-            </Link>
-            <button
-              onClick={handleShowListing}
-              className='bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
-              My Ads
-            </button>
-            <button
-              onClick={fetchWishlistData}
-              className='bg-blue-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
-              My Wishlist
-            </button>
-            <button
-              onClick={handleMessages}
-              className='bg-green-400 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
-              My Messages
-            </button>
-            <button
-              onClick={handleSignOut}
-              className='bg-red-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
-              Sign out
-            </button>
-            <button
-              onClick={handleDeleteUser}
-              className='bg-red-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
-              Delete account
-            </button>
+          <div class="min-h-screen flex flex-row bg-gray-100">
+  <div class="flex flex-col w-56 bg-white rounded-r-3xl overflow-hidden">
+  <div class="flex flex-col items-center justify-center h-20 shadow-md">
+  <h1 class="text-xl text-green-600">Welcome Back!</h1>
+  <h1 class="text-xl text-green-500">{currentUser.username ? currentUser.username : 'User'}</h1>
+</div>
+    <ul class="flex flex-col py-4">
+      <li>
+        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-user"></i></span>
+          <span class="text-sm font-medium"
+          onClick={() => setShowProfile(true)}>
+            Profile</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-news"></i></span>
+          <span class="text-sm font-medium"
+          onClick={handleShowCreateAd}>
+          Post an Add</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-list-ul"></i></span>
+          <span class="text-sm font-medium"
+          onClick={handleShowListing}>
+          Posted Adds</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-shopping-bag"></i></span>
+          <span class="text-sm font-medium"
+          onClick={fetchWishlistData}>
+          Wishlist</span>
+        </a>
+      </li>
+      <li>
+        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-chat"></i></span>
+          <span class="text-sm font-medium"
+          onClick={handleMessages}>
+          Chat</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href="#"
+          className="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800"
+        >
+          <span className="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400">
+            <i className="bx bx-log-out"></i>
+          </span>
+          <span
+            className="text-sm font-medium"
+            onClick={() => setShowLogoutConfirm(true)}
+          >
+            Logout
+          </span>
+        </a>
+        {/* Confirmation Modal */}
+        {showLogoutConfirm && (
+          <div className="absolute top-full left-0 w-full mt-2 z-50">
+            <ConfirmationMessage
+              message="Are you sure you want to logout?"
+              confirmColor="bg-red-400"
+              onConfirm={() => {
+                handleSignOut();
+                setShowLogoutConfirm(false);
+              }}
+              onCancel={() => setShowLogoutConfirm(false)}
+            />
+          </div>
+        )}
+      </li>
+      <li>
+        <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
+          <span class="inline-flex items-center justify-center h-12 w-12 text-lg text-gray-400"><i class="bx bx-user-x"></i></span>
+          <span class="text-sm font-medium"
+           onClick={() => setShowDeleteConfirm(true)}>
+          Delete Account</span>
+          <span class="ml-auto mr-6 text-sm bg-red-100 rounded-full px-3 py-px text-red-500">5</span>
+        </a>
+         {/* Confirmation Modal */}
+         {showDeleteConfirm && (
+          <div className="absolute top-full left-0 w-full mt-2 z-50">
+            <ConfirmationMessage
+              message="Are you sure you want to delete account?"
+              confirmColor="bg-red-500"
+              onConfirm={() => {
+                handleDeleteUser();
+                setShowDeleteConfirm(false);
+              }}
+              onCancel={() => setShowDeleteConfirm(false)}
+            />
+          </div>
+        )}
+      </li>      
+    </ul>
+  </div>
+</div>
+            
             <p className='text-red-700 mt-5'>{showListingsError ? 'Error in Listings' : ''}</p>
             <p className='text-red-700 mt-5'>{showWishlistError ? 'Error in Wishlist' : ''}</p>
           </div>
@@ -252,7 +325,8 @@ const Profile = () => {
         <div className='col-span-1 md:col-span-3 lg:col-span-3 p-3'>
           {showProfile ? (
             <div className='flex flex-col gap-4'>
-              <h1 className='text-center mt-0 text-2xl font-semibold'>Your Profile</h1>
+              <h1 className='text-3xl font-semibold text-center my-7'>
+                Account Details</h1>
               <form onSubmit={handleSubmit} className='flex flex-col md:grid md:grid-cols-2 gap-4'>
                 <div className='flex flex-col items-center'>
                   <input
@@ -333,7 +407,8 @@ const Profile = () => {
             <div>
               {userListings && userListings.length > 0 && (
                 <div className='flex flex-col gap-4'>
-                  <h1 className='text-center mt-0 text-2xl font-semibold'>Your Listings</h1>
+                  <h1 className='text-3xl font-semibold text-center my-7'>
+                    My Adds</h1>
                   {userListings.map((listing) => (
                     <div
                       key={listing._id}
@@ -382,7 +457,8 @@ const Profile = () => {
             <div>
               {wishlist && wishlist.length > 0 ? (
                 <div className='flex flex-col gap-4'>
-                  <h1 className='text-center mt-0 text-2xl font-semibold'>Your Wishlist</h1>
+                  <h1 className='text-3xl font-semibold text-center my-7'>
+                    Wishlist</h1>
                   {wishlist.map((item) => (
                     <div
                       key={item._id}
@@ -426,7 +502,11 @@ const Profile = () => {
             </div>
           ) : showMessages ? (
             <div>
+              <div className='flex flex-col gap-4'>
+                  <h1 className='text-3xl font-semibold text-center my-7'>
+                    Chat</h1>
               <Chat />
+              </div>
             </div>
           ) : (
             <Notification

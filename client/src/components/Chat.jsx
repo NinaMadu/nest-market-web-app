@@ -142,7 +142,7 @@ export default function Chat() {
         to={`/listing/${selectedConversation?.itemId}`} // Navigate to the listing page
         className="font-bold text-blue-500 hover:underline flex items-center"
       >
-        {selectedConversation?.title || "Chat"}
+        {selectedConversation?.title || "No chat is selected."}
 
         {/* Link icon at the back */}
         <FaLink className="ml-2 text-blue-500" />
