@@ -54,27 +54,53 @@ const SignUp = () => {
 
 
   return (
-    <div className='p-3 max-w-lg mx-auto'>
-      <h1 className='text-3x1 text-center font-semibold my-7'>Sign Up
-      </h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-        <input type='text' placeholder='Username' className='border p-3 rounded-lg' id='username' onChange={handleChange}></input>
-        <input type='email' placeholder='Email' className='border p-3 rounded-lg' id='email' onChange={handleChange}></input>
-        <input type='password' placeholder='Password' className='border p-3 rounded-lg' id='password' onChange={handleChange}></input>
-        <button className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-0'>
-          {loading ? "Loading.." : "Sign UP" }</button>
-          <OAuth />
-      </form>
+    <div 
+  className="flex justify-center items-center min-h-screen bg-cover bg-center bg-no-repeat p-4"
+  style={{ backgroundImage: "url('https://your-public-image-url.com/Untitled.png')" }} // Replace with actual image URL
+>
+<div className="w-full max-w-md bg-white shadow-lg rounded-xl p-6 transform -translate-y-10">
+    <h1 className="text-3xl text-center font-semibold text-[#6b7d90] mb-6">Sign Up</h1>
+    
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <input 
+        type="text" 
+        placeholder="Username" 
+        className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3dd0b1]" 
+        id="username" 
+        onChange={handleChange} 
+      />
+      <input 
+        type="email" 
+        placeholder="Email" 
+        className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3dd0b1]" 
+        id="email" 
+        onChange={handleChange} 
+      />
+      <input 
+        type="password" 
+        placeholder="Password" 
+        className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3dd0b1]" 
+        id="password" 
+        onChange={handleChange} 
+      />
+      
+      <button className="bg-[#3dd0b1] text-white p-3 rounded-lg uppercase font-semibold transition-all duration-300 hover:bg-[#6b7d90]">
+        {loading ? "Loading.." : "Sign Up"}
+      </button>
 
-      <div className='flex gap-2 mt-5'>
-        <p>Have you signup already </p>
-        <Link to={'/sign-in'} className='text-blue-700'>
-        <span className='text-blue-700'>Sign In</span>
-        </Link>
-      </div>
+      <OAuth />
+    </form>
 
-      {error && <p className='text-red-500 m'>{error}</p>}
+    <div className="flex justify-center gap-2 mt-5 text-sm">
+      <p className="text-gray-600">Already signed up?</p>
+      <Link to="/sign-in" className="text-[#3dd0b1] font-medium hover:underline">
+        Sign In
+      </Link>
     </div>
+
+    {error && <p className="text-red-500 text-center mt-4">{error}</p>}
+  </div>
+</div>
 
   )
 }
