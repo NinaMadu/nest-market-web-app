@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { FaPaperPlane } from 'react-icons/fa';
 
 export default function Contact({ listing }) {
   const [seller, setSeller] = useState(null);
@@ -91,9 +92,10 @@ export default function Contact({ listing }) {
 
           <button
             onClick={handleSendMessage}
-            className='bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95'
+            className='bg-[#44D1B7] text-white text-center p-3 uppercase rounded-lg hover:opacity-95 flex justify-center items-center gap-2'
           >
             Send Message
+            <FaPaperPlane className='text-white' />
           </button>
 
           {success && (

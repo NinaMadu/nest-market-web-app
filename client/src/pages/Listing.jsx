@@ -128,8 +128,8 @@ export const Listing = () => {
                     {listing.address}
                 </p>
                 <div className='flex gap-4'>
-                    <p className='bg-red-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                        LKR {listing.price}
+                    <p className='bg-[#44D1B7] w-full max-w-[200px] text-white text-center p-1 rounded-md'>
+                        LKR {listing.price}.00
                     </p>
                     {listing.negligible && <i style={{ fontSize: '0.8rem' }}>Negligible</i>}
                 </div>
@@ -140,7 +140,7 @@ export const Listing = () => {
                 {currentUser && listing.userRef !== currentUser._id && !contact && (
                                 <button
                                 onClick={() => setContact(true)}
-                                className='bg-slate-700 text-white rounded-lg uppercase p-3 hover:opacity-95'
+                                className='bg-[#44D1B7] text-white rounded-lg uppercase p-3 hover:opacity-95'
                                 >Contact Seller</button>
                             )}
 
