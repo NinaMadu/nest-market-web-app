@@ -11,6 +11,7 @@ import UpdateListing from "./pages/UpdateListing";
 import Listing  from "./pages/Listing";
 import Search from "./pages/Search";
 import Chat from "./components/Chat";
+import Footer from "./components/Footer";
 
 const App = () => {
   return (
@@ -34,6 +35,7 @@ const App = () => {
           <Route path='/chat' element={<Chat />} />
         </Route>
     </Routes>
+    <Footer />
     </BrowserRouter>
   
   )
