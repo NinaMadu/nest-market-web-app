@@ -8,6 +8,7 @@ import Logo from '../assets/Logo.png';
 import AdSlider from '../components/AdSlider.jsx';
 import { useSelector } from 'react-redux';
 import 'swiper/css/bundle';
+import Notification from '../components/Notification.jsx';
 
 const Home = () => {
 
@@ -17,6 +18,8 @@ const Home = () => {
   const [furnitureListings, setFurnitureListings] = useState([]);
   const [sportListings, setSportListings] = useState([]);
   const [showLoginMessage, setShowLoginMessage] = useState(false);
+  const [notification, setNotification] = useState(null);
+
   SwiperCore.use([Navigation]);
 
   const { currentUser } = useSelector((state) => state.user);
@@ -85,6 +88,7 @@ const Home = () => {
   const handleCreateAdClick = () => {
     if (!currentUser) {
       setShowLoginMessage(true);
+      setNotification({ type: 'error', message: 'You need to sign in to create a free ad.' });
     } else {
       navigate('/create-listing');
     }
@@ -96,7 +100,14 @@ const Home = () => {
 
   return (
     <div className='flex flex-col gap-6 p-10 px-5 max-w-6xl mx-auto'>
-
+      {/* Notification Component */}
+      {notification && (
+        <Notification 
+          type={notification.type} 
+          message={notification.message} 
+          onClose={handleNotificationClose} 
+        />
+      )}
 
       <div className='flex flex-col lg:flex-row w-full max-w-6xl'>
         {/* Left Side */}

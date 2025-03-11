@@ -267,7 +267,7 @@ export const CreateListing = () => {
                         <button
                             disabled={uploading}
                             onClick={handleImageSubmit}
-                            type='button' className='p-3 text-green-700 rounded  bg-slate-300 border-green-900'>
+                            type='button' className='p-3 text-white rounded  bg-[#44D1B7] border-green-900'>
                             {uploading ? "Uploading..." : "Upload"}
                         </button>
 
@@ -283,7 +283,7 @@ export const CreateListing = () => {
                     </div>
                 ))}
                 <button disabled={loading || uploading }
-                    className='p-3 bg-slate-700 text-white rounded gap-10'>{loading ? "Creating..." : "Create Listing"}</button>
+                    className='p-3 bg-[#44D1B7] text-white rounded gap-10'>{loading ? "Creating..." : "Create Listing"}</button>
                 {error && <p className='text-red-700 text-sm'>{error}</p>}
             </form >
         </main >

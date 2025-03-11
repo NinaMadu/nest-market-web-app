@@ -2,6 +2,7 @@ import { set } from 'mongoose';
 import { useNavigate ,Link} from 'react-router-dom';
 import React, { useState } from 'react'
 import OAuth from '../components/OAuth';
+import Notification from '../components/Notification';
 
 const SignUp = () => {
 
@@ -9,7 +10,7 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({});
-
+  const [notification, setNotification] = useState(null);
 
 
   const handleChange = (e) => {
@@ -35,17 +36,22 @@ const SignUp = () => {
         if(data.success == false){
           setLoading(false);
           setError(data.message);
+          setNotification({ type: 'error', message: data.message });
           return;
         }
 
         setLoading(false);
-        setError(error.message);
-        navigate("/sign-in");
+        //setError(nul);
+        setNotification({ type: 'success', message: 'Sign up successful! Redirecting to sign-in.' });
+        setTimeout(() => {
+          navigate("/sign-in");
+        }, 3000);
 
 
       } catch (error) {
         setLoading(false);
         setError(error.message);
+        setNotification({ type: 'error', message: error.message });
       }
 
     
@@ -100,6 +106,15 @@ const SignUp = () => {
 
     {error && <p className="text-red-500 text-center mt-4">{error}</p>}
   </div>
+
+   {/* Notification Component */}
+   {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)} // Close the notification when the user clicks the "X"
+        />
+      )}
 </div>
 
   )

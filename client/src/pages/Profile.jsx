@@ -11,6 +11,7 @@ import Chat from '../components/Chat.jsx';
 import { set } from 'mongoose';
 import 'boxicons/css/boxicons.min.css';
 import ConfirmationMessage from '../components/ConfirmationMessage.jsx';
+import { FaTrashAlt, FaEdit } from 'react-icons/fa';
 
 const Profile = () => {
   const { currentUser, loading, error } = useSelector((state) => state.user);
@@ -215,10 +216,10 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
           <div className='flex flex-col gap-4'>
           <div class="min-h-screen flex flex-row bg-gray-100">
   <div class="flex flex-col w-56 bg-white rounded-r-3xl overflow-hidden">
-  <div class="flex flex-col items-center justify-center h-20 shadow-md">
-  <h1 class="text-xl text-green-600">Welcome Back!</h1>
-  <h1 class="text-xl text-green-500">{currentUser.username ? currentUser.username : 'User'}</h1>
-</div>
+  <div class="flex flex-col items-center justify-center h-24 mb-6">
+    <h1 class="text-2xl font-semibold text-[#64748B]">Welcome Back!</h1>
+    <h2 class="text-xl text-[#4E5A6A] mt-2">{currentUser.username ? currentUser.username : 'User'}</h2>
+  </div>
     <ul class="flex flex-col py-4">
       <li>
         <a href="#" class="flex flex-row items-center h-12 transform hover:translate-x-2 transition-transform ease-in duration-200 text-gray-500 hover:text-gray-800">
@@ -296,7 +297,7 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
           <span class="text-sm font-medium"
            onClick={() => setShowDeleteConfirm(true)}>
           Delete Account</span>
-          <span class="ml-auto mr-6 text-sm bg-red-100 rounded-full px-3 py-px text-red-500">5</span>
+          <span class="ml-auto mr-6 text-sm bg-red-100 rounded-full px-3 py-px text-red-500"></span>
         </a>
          {/* Confirmation Modal */}
          {showDeleteConfirm && (
@@ -380,7 +381,7 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
                     id='password'
                     className='border p-3 rounded-lg'
                   />
-                  <button className='bg-slate-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
+                  <button className='bg-[#44D1B7] text-white p-3 rounded-lg uppercase text-center hover:opacity-95'>
                     {loading ? 'Loading...' : 'Update'}
                   </button>
   
@@ -405,7 +406,7 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
             </div>
           ) : showUserItems ? (
             <div>
-              {userListings && userListings.length > 0 && (
+              {userListings && userListings.length > 0 ? (
                 <div className='flex flex-col gap-4'>
                   <h1 className='text-3xl font-semibold text-center my-7'>
                     My Adds</h1>
@@ -428,18 +429,24 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
                       <div className='flex flex-col items-center'>
                         <button
                           onClick={() => handleListingDelete(listing._id)}
-                          className='text-red-700 uppercase'>
-                          Delete
+                          className='text-red-700 uppercase'
+                          title="Delete"
+                          >
+                          <FaTrashAlt className="text-xl" />
                         </button>
                         <Link to={`/update-listing/${listing._id}`}>
-                          <button className='text-green-700 uppercase'>
-                            Edit
+                          <button className='text-green-700 uppercase' title="Edit">
+                          <FaEdit className="text-xl" />
                           </button>
                         </Link>
                       </div>
                     </div>
                   ))}
                 </div>
+              ):(
+                <div className='flex justify-center items-center'>
+    <p className='text-xl text-gray-600'>You have no listings yet.</p>
+  </div>
               )}
               {showListingsError && (
                 <Notification
@@ -478,8 +485,9 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
                       <div className='flex flex-col items-center'>
                         <button
                           onClick={() => handleListingDelete(item._id)}
-                          className='text-red-700 uppercase'>
-                          Remove
+                          className='text-red-700 uppercase'title="Delete"
+                          >
+                            <FaTrashAlt className="text-xl" />
                         </button>
                       </div>
                     </div>

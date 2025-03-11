@@ -4,11 +4,17 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 import OAuth from '../components/OAuth';
+import Notification from '../components/Notification';
 
 const SignIn = () => {
 
   const [formData, setFormData] = useState({});
   const { loading, error } = useSelector((state) => state.user);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationProps, setNotificationProps] = useState({
+    type: '',
+    message: '',
+  });
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -50,9 +56,14 @@ const SignIn = () => {
         dispatch(signInSuccess(data));
         navigate("/");
 
+        setNotificationProps({ type: 'success', message: 'Successfully signed in!' });
+        setShowNotification(true);
 
       } catch (error) {
        dispatch(signInFailure(error.message));
+
+       setNotificationProps({ type: 'error', message: error.message });
+      setShowNotification(true);
       }
 
     
@@ -97,6 +108,14 @@ const SignIn = () => {
   
         {error && <p className="text-red-500 text-center mt-4">{error}</p>}
       </div>
+      {/* Notification component to show success/error message */}
+      {showNotification && (
+        <Notification
+          type={notificationProps.type}
+          message={notificationProps.message}
+          onClose={() => setShowNotification(false)} // Close notification
+        />
+      )}
     </div>
   );
   

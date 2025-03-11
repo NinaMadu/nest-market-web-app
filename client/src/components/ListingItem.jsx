@@ -3,13 +3,14 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { MdLocationOn, MdCheckCircle, MdFavorite, MdFavoriteBorder } from 'react-icons/md';
 import { toggleWishlist, fetchWishlist } from '../services/WishlistService';
+import Notification from './Notification';
 
 export default function ListingItem({ listing }) {
 
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [showWishlistError, setShowWishlistError] = useState(false); 
-
+  const [notification, setNotification] = useState(null);
   const { currentUser } = useSelector((state) => state.user)
 
   const fetchWishlistData = useCallback(async () => {
@@ -19,6 +20,7 @@ export default function ListingItem({ listing }) {
       const data = await fetchWishlist(currentUser._id);
       console.log('Fetched wishlist data:', data); // Log response data
       if (data.success === false) {
+        setNotification({ type: 'error', message: 'Failed to fetch wishlist.' });
         setShowWishlistError(true);
         return;
       }
@@ -26,6 +28,7 @@ export default function ListingItem({ listing }) {
       console.log('Is item wishlisted:', isItemInWishlist); // Log wishlist check
       setIsWishlisted(isItemInWishlist);
     } catch (error) {
+      setNotification({ type: 'error', message: 'Error fetching wishlist data.' });
       setShowWishlistError(true);
     }
   }, [currentUser?._id, listing._id]);
@@ -42,9 +45,13 @@ export default function ListingItem({ listing }) {
       const result = await toggleWishlist(listing._id);
       if (result.success) {
         setIsWishlisted(!isWishlisted);
+        setNotification({
+          type: 'success',
+          message: isWishlisted ? 'Removed from Wishlist' : 'Added to Wishlist',
+        });
       }
     } catch (error) {
-      console.error('Error toggling wishlist:', error);
+      setNotification({ type: 'error', message: 'Error toggling wishlist.' });
     }
   };
 
@@ -59,6 +66,15 @@ export default function ListingItem({ listing }) {
 
   return (
     <div className='relative bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[330px]'>
+     {/* Notification component to show success/error message */}
+     {notification && (
+        <Notification
+          type={notification.type}
+          message={notification.message}
+          onClose={() => setNotification(null)} // Close notification
+        />
+      )}
+      
       <Link to={`/listing/${listing._id}`}>
       
       <div className='relative'>
