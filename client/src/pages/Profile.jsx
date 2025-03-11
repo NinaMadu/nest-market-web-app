@@ -208,10 +208,10 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   };
 
   return (
-    <div className='w-full'>
+    <div className='w-full '>
         
-
-      <div className='w-full grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8'>
+        
+      <div className='w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8'>
         <div className='col-span-1 md:col-span-1 lg:col-span-1 p-3'>
           <div className='flex flex-col gap-4'>
           <div class="min-h-screen flex flex-row bg-gray-100">
@@ -297,7 +297,7 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
           <span class="text-sm font-medium"
            onClick={() => setShowDeleteConfirm(true)}>
           Delete Account</span>
-          <span class="ml-auto mr-6 text-sm bg-red-100 rounded-full px-3 py-px text-red-500"></span>
+          
         </a>
          {/* Confirmation Modal */}
          {showDeleteConfirm && (
@@ -321,9 +321,11 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
             <p className='text-red-700 mt-5'>{showListingsError ? 'Error in Listings' : ''}</p>
             <p className='text-red-700 mt-5'>{showWishlistError ? 'Error in Wishlist' : ''}</p>
           </div>
-        </div>
+          </div>
+        
   
-        <div className='col-span-1 md:col-span-3 lg:col-span-3 p-3'>
+        
+        <div className='col-span-1 md:col-span-2 lg:col-span-4 p-3'>
           {showProfile ? (
             <div className='flex flex-col gap-4'>
               <h1 className='text-3xl font-semibold text-center my-7'>
@@ -526,6 +528,7 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
         </div>
       </div>
     </div>
+    
   );
   
 };
