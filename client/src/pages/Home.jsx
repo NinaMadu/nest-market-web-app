@@ -28,7 +28,7 @@ const Home = () => {
   useEffect(() => {
     const fetchRealstaleListings = async () => {
       try {
-        const res = await fetch('/api/listing/get?category=Real+Estate&limit=4');
+        const res = await fetch('/api/listing/get?category=Real+Estate&limit=3');
         const data = await res.json();
         setRealstateListings(data);
         fetchElectronicListings();
@@ -39,7 +39,7 @@ const Home = () => {
 
     const fetchElectronicListings = async () => {
       try {
-        const res = await fetch('/api/listing/get?category=Electronics&limit=4');
+        const res = await fetch('/api/listing/get?category=Electronics&limit=3');
         const data = await res.json();
         setElectronicListings(data);
         fetchAutomobileListings();
@@ -50,7 +50,7 @@ const Home = () => {
 
     const fetchAutomobileListings = async () => {
       try {
-        const res = await fetch('/api/listing/get?category=Automobile&limit=4');
+        const res = await fetch('/api/listing/get?category=Automobile&limit=3');
         const data = await res.json();
         setAutomobileListings(data);
       } catch (error) {
@@ -60,7 +60,7 @@ const Home = () => {
 
     const fetchFurnitureListings = async () => {
       try {
-        const res = await fetch('/api/listing/get?category=Furniture&limit=4');
+        const res = await fetch('/api/listing/get?category=Furniture&limit=3');
         const data = await res.json();
         setFurnitureListings(data);
       } catch (error) {
@@ -70,7 +70,7 @@ const Home = () => {
 
     const fetchSportListings = async () => {
       try {
-        const res = await fetch('/api/listing/get?category=Sports+Equipment&limit=4');
+        const res = await fetch('/api/listing/get?category=Sports+Equipment&limit=3');
         const data = await res.json();
         setSportListings(data);
       } catch (error) {
@@ -92,6 +92,10 @@ const Home = () => {
     } else {
       navigate('/create-listing');
     }
+  };
+
+  const handleNotificationClose = () => {
+    setNotification(null);  
   };
 
   const handleLoginMessageClose = () => {
