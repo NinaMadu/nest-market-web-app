@@ -8,7 +8,7 @@ import { fetchWishlist } from '../services/WishlistService';
 import Notification from '../components/Notifications';
 import CreateListing from './CreateListing.jsx';
 import Chat from '../components/Chat.jsx';
-import { set } from 'mongoose';
+//import { set } from 'mongoose';
 import 'boxicons/css/boxicons.min.css';
 import ConfirmationMessage from '../components/ConfirmationMessage.jsx';
 import { FaTrashAlt, FaEdit } from 'react-icons/fa';
@@ -167,6 +167,29 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
       console.log(error.message);
     }
   };
+
+const handleWishlistItemRemove = async (itemId) => {
+  try {
+    const res = await fetch(`/api/user/wishlist/toggle`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ itemId }), 
+    });
+
+    const data = await res.json();
+    if (data.success === false) {
+      console.log(data.message);
+      return;
+    }
+    
+    setWishlist((prev) => prev.filter((item) => item._id !== itemId));
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+
 
   const handleMessages = () => {
     setShowProfile(false);
@@ -486,7 +509,7 @@ const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
                       </Link>
                       <div className='flex flex-col items-center'>
                         <button
-                          onClick={() => handleListingDelete(item._id)}
+                          onClick={() => handleWishlistItemRemove(item._id)}
                           className='text-red-700 uppercase'title="Delete"
                           >
                             <FaTrashAlt className="text-xl" />
